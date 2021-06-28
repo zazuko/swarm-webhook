@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -p .",
     "dev": "ts-node-dev --respawn -- src/index.ts",
-    "start": "npm run build && node ./dist/index.js",
+    "start:no-build": "node ./dist/index.js",
+    "start": "npm run build && npm run start:no-build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -16,6 +17,8 @@
     "template"
   ],
   "devDependencies": {
+    "@types/dockerode": "^3.2.3",
+    "@types/node": "^15.12.5",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
     "eslint": "^7.29.0",
@@ -23,5 +26,9 @@
     "eslint-plugin-import": "^2.23.4",
     "ts-node-dev": "^1.1.6",
     "typescript": "^4.3.4"
+  },
+  "dependencies": {
+    "dockerode": "^3.3.0",
+    "fastify": "^3.18.0"
   }
 }
