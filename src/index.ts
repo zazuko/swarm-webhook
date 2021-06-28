@@ -14,14 +14,6 @@ const refreshInterval = +(process.env.REFRESH_INTERVAL || 1_000);
 let services: Docker.Service[] = [];
 
 /**
- * Wait a number of milliseconds.
- *
- * @param ms number of milliseconds to wait.
- * @returns a promise that resolves after `ms` milliseconds.
- */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
  * Log a message.
  *
  * @param message Message to log.
