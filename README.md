@@ -93,9 +93,6 @@ You can use following environment variables:
 
 - `SERVER_PORT`: configure the server port (default: `3000`)
 - `SERVER_HOST`: configure the server host (default: `::`)
-- `REFRESH_INTERVAL`: refresh the list of Docker services using this interval in milliseconds (default: `1000`)
-
-Doing requests in an interval shorter than `REFRESH_INTERVAL` could lead to some 500 errors.
 
 ### Configure your services
 
