@@ -87,51 +87,21 @@ const filterServicesByName = (
     const targetServices = filterServicesByName(services, targetService);
 
     const update = await Promise.all(
-      targetServices.map(async (service) => {
-        const dockerService = docker.getService(service.ID);
-        let version = service.Version?.Index;
-        const replicas = service.Spec?.Mode?.Replicated?.Replicas || 0;
-
-        if (replicas > 0) {
-          await dockerService.update({
-            ...service.Spec,
-            Mode: {
-              ...service.Spec?.Mode,
-              Replicated: {
-                ...service.Spec?.Mode?.Replicated,
-                Replicas: 0,
-              },
-            },
-            TaskTemplate: {
-              ...service.Spec?.TaskTemplate,
-              ForceUpdate: version,
-            },
-            version,
-          });
-
-          const updatedDockerService = docker.getService(service.ID);
-          const inspected = await updatedDockerService.inspect();
-          if (inspected?.Version?.Index) {
-            version = inspected?.Version?.Index;
-          }
-        }
-
-        return dockerService.update({
-          ...service.Spec,
-          Mode: {
-            ...service.Spec?.Mode,
-            Replicated: {
-              ...service.Spec?.Mode?.Replicated,
-              Replicas: 1,
-            },
+      targetServices.map((service) => docker.getService(service.ID).update({
+        ...service.Spec,
+        Mode: {
+          ...service.Spec?.Mode,
+          Replicated: {
+            ...service.Spec?.Mode?.Replicated,
+            Replicas: 1,
           },
-          TaskTemplate: {
-            ...service.Spec?.TaskTemplate,
-            ForceUpdate: version,
-          },
-          version,
-        });
-      }),
+        },
+        TaskTemplate: {
+          ...service.Spec?.TaskTemplate,
+          ForceUpdate: service.Version?.Index,
+        },
+        version: service.Version?.Index,
+      })),
     );
 
     return update;
