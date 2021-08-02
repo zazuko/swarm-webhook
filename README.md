@@ -9,7 +9,7 @@ version: "3"
 
 services:
   webhook:
-    image: docker.io/zazuko/swarm-webhook
+    image: ghcr.io/zazuko/swarm-webhook
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     ports:
@@ -75,7 +75,7 @@ You have to deploy the webhook service:
 
 ```yaml
 webhook:
-  image: docker.io/zazuko/swarm-webhook
+  image: ghcr.io/zazuko/swarm-webhook
   volumes:
     - "/var/run/docker.sock:/var/run/docker.sock"
   ports:
