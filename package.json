@@ -1,6 +1,6 @@
 {
   "name": "swarm-webhook",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Webhook service for Docker Swarm",
   "main": "dist/index.js",
   "scripts": {
