@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM docker.io/library/node:16-alpine3.15
 
 WORKDIR /app
 COPY package.json package-lock.json ./
