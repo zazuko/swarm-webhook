@@ -115,3 +115,6 @@ The `swarm.webhook.enabled=true` is useful to filter only on services having thi
 
 You will also have to add the `swarm.webhook.name=your-service` label (by changing `your-service` with something which is unique).
 This will be the part you should provide in the URL: `WEBHOOK_URL/start/your-service`.
+
+If you want to run multiple instances for a specific service, you can add the following label: `swarm.webhook.replicas=2` (replace `2` with the desired number of replicas).
+The default value is `1`.

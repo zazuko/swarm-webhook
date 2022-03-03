@@ -7,6 +7,7 @@ const docker = new Docker();
 
 const WEBHOOK_ENABLED_LABEL = 'swarm.webhook.enabled';
 const WEBHOOK_NAME_LABEL = 'swarm.webhook.name';
+const WEBHOOK_REPLICAS_LABEL = 'swarm.webhook.replicas';
 const port = process.env.SERVER_PORT || 3000;
 const host = process.env.SERVER_HOST || '::';
 
@@ -38,6 +39,27 @@ const getEnabledServices = async (): Promise<Docker.Service[]> => {
 
     return false;
   });
+};
+
+/**
+ * Get the desired number of replicas for a specific service.
+ *
+ * @param service Docker service.
+ * @param fallback Default value for replicas.
+ * @returns Number of desired replicas.
+ */
+const getDesiredReplicas = (service: Docker.Service, fallback: number | string  = 1): number => {
+  let replicas = parseInt(`${fallback}`, 10);
+
+  if (!service.Spec?.Labels) {
+    return replicas;
+  }
+
+  if (WEBHOOK_REPLICAS_LABEL in service.Spec.Labels) {
+    replicas = parseInt(service.Spec.Labels[WEBHOOK_REPLICAS_LABEL] || `${fallback}`, 10);
+  }
+
+  return replicas;
 };
 
 /**
@@ -87,21 +109,25 @@ const filterServicesByName = (
     const targetServices = filterServicesByName(services, targetService);
 
     const update = await Promise.all(
-      targetServices.map((service) => docker.getService(service.ID).update({
-        ...service.Spec,
-        Mode: {
-          ...service.Spec?.Mode,
-          Replicated: {
-            ...service.Spec?.Mode?.Replicated,
-            Replicas: 1,
+      targetServices.map((service) => {
+        const replicas = getDesiredReplicas(service, 1);
+
+        return docker.getService(service.ID).update({
+          ...service.Spec,
+          Mode: {
+            ...service.Spec?.Mode,
+            Replicated: {
+              ...service.Spec?.Mode?.Replicated,
+              Replicas: replicas,
+            },
           },
-        },
-        TaskTemplate: {
-          ...service.Spec?.TaskTemplate,
-          ForceUpdate: service.Version?.Index,
-        },
-        version: service.Version?.Index,
-      })),
+          TaskTemplate: {
+            ...service.Spec?.TaskTemplate,
+            ForceUpdate: service.Version?.Index,
+          },
+          version: service.Version?.Index,
+        });
+      }),
     );
 
     return update;
