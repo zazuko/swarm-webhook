@@ -48,7 +48,10 @@ const getEnabledServices = async (): Promise<Docker.Service[]> => {
  * @param fallback Default value for replicas.
  * @returns Number of desired replicas.
  */
-const getDesiredReplicas = (service: Docker.Service, fallback: number | string  = 1): number => {
+const getDesiredReplicas = (
+  service: Docker.Service,
+  fallback: number | string = 1,
+): number => {
   let replicas = parseInt(`${fallback}`, 10);
 
   if (!service.Spec?.Labels) {
@@ -56,7 +59,10 @@ const getDesiredReplicas = (service: Docker.Service, fallback: number | string  
   }
 
   if (WEBHOOK_REPLICAS_LABEL in service.Spec.Labels) {
-    replicas = parseInt(service.Spec.Labels[WEBHOOK_REPLICAS_LABEL] || `${fallback}`, 10);
+    replicas = parseInt(
+      service.Spec.Labels[WEBHOOK_REPLICAS_LABEL] || `${fallback}`,
+      10,
+    );
   }
 
   return replicas;
@@ -72,17 +78,19 @@ const getDesiredReplicas = (service: Docker.Service, fallback: number | string  
 const filterServicesByName = (
   services: Docker.Service[],
   name: string,
-): Docker.Service[] => services.filter((service) => {
-  if (!service.Spec?.Labels) {
+): Docker.Service[] => {
+  return services.filter((service) => {
+    if (!service.Spec?.Labels) {
+      return false;
+    }
+
+    if (WEBHOOK_NAME_LABEL in service.Spec.Labels) {
+      return service.Spec.Labels[WEBHOOK_NAME_LABEL] === name;
+    }
+
     return false;
-  }
-
-  if (WEBHOOK_NAME_LABEL in service.Spec.Labels) {
-    return service.Spec.Labels[WEBHOOK_NAME_LABEL] === name;
-  }
-
-  return false;
-});
+  });
+};
 
 (async () => {
   // list all containers having the `WEBHOOK_ENABLED_LABEL` label set to `true`
@@ -143,24 +151,26 @@ const filterServicesByName = (
     const targetServices = filterServicesByName(services, targetService);
 
     const update = await Promise.all(
-      targetServices.map((service) => docker.getService(service.ID).update({
-        ...service.Spec,
-        Mode: {
-          ...service.Spec?.Mode,
-          Replicated: {
-            ...service.Spec?.Mode?.Replicated,
-            Replicas: 0,
+      targetServices.map((service) =>
+        docker.getService(service.ID).update({
+          ...service.Spec,
+          Mode: {
+            ...service.Spec?.Mode,
+            Replicated: {
+              ...service.Spec?.Mode?.Replicated,
+              Replicas: 0,
+            },
           },
-        },
-        version: service.Version?.Index,
-      })),
+          version: service.Version?.Index,
+        }),
+      ),
     );
 
     return update;
   });
 
   // webhook server listening of specified port
-  server.listen(port, host, (err, address) => {
+  server.listen({ port: parseInt(`${port}`, 10), host }, (err, address) => {
     if (err) {
       console.error(err);
       process.exit(1);
